@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ./:/workspaces/${localWorkspaceFolderBasename:-workspace}
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: travelops_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./app/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+
+volumes:
+  mysql-data:

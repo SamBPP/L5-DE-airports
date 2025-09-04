@@ -1,0 +1,31 @@
+{
+  "name": "mysql-python-codespace",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces",
+  "forwardPorts": [
+    3306
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+  "postCreateCommand": "pip install -r app/requirements.txt",
+  "remoteEnv": {
+    "MYSQL_HOST": "mysql",
+    "MYSQL_PORT": "3306",
+    "MYSQL_USER": "app_user",
+    "MYSQL_PASSWORD": "app_password",
+    "MYSQL_DATABASE": "airports"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}
