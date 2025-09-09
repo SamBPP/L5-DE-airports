@@ -4,6 +4,7 @@ Seed the airports MySQL schema with synthetic data.
 (See comments inside for usage and options.)
 """
 import argparse
+import os
 import random
 import sys
 from datetime import datetime, timedelta
@@ -61,12 +62,14 @@ EMAIL_DOMAINS = ["example.com","mail.com","gmail.com","outlook.com","yahoo.com"]
 PAY_METHODS = ["CARD","PAYPAL","VOUCHER","BANK_TRANSFER"]
 
 def parse_args():
+    """Parse CLI arguments using environment variables as defaults."""
+
     p = argparse.ArgumentParser(description="Seed TravelOps MySQL data")
-    p.add_argument("--host", default="127.0.0.1")
-    p.add_argument("--port", type=int, default=3306)
-    p.add_argument("--user", required=True)
-    p.add_argument("--password", required=True)
-    p.add_argument("--database", required=True)
+    p.add_argument("--host", default=os.getenv("MYSQL_HOST", "127.0.0.1"))
+    p.add_argument("--port", type=int, default=int(os.getenv("MYSQL_PORT", "3306")))
+    p.add_argument("--user", default=os.getenv("MYSQL_USER"))
+    p.add_argument("--password", default=os.getenv("MYSQL_PASSWORD"))
+    p.add_argument("--database", default=os.getenv("MYSQL_DATABASE"))
     p.add_argument("--reset", action="store_true", help="Truncate tables before seeding (FK-safe order)")
     p.add_argument("--airports", type=int, default=20, help="Target number of airports")
     p.add_argument("--customers", type=int, default=300, help="Target number of customers")
@@ -79,7 +82,17 @@ def parse_args():
     p.add_argument("--partial-payments", action="store_true", help="Allow partial prepayments for PENDING bookings")
     p.add_argument("--currency", default="GBP", help="Currency code for payments (3 letters)")
     p.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    return p.parse_args()
+
+    args = p.parse_args()
+
+    # Ensure required connection details are present either via args or env vars
+    missing = [name for name in ("user", "password", "database") if getattr(args, name) is None]
+    if missing:
+        p.error(
+            "--user/--password/--database required (or set MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE)"
+        )
+
+    return args
 
 def connect(args):
     conn = mysql.connect(
@@ -153,7 +166,7 @@ def generate_name_email(fake: Optional['Faker'], idx: int) -> Tuple[str,str,str]
         return first, last, email.lower()
     first = random.choice(FIRST_NAMES)
     last  = random.choice(LAST_NAMES)
-    email = f\"{first}.{last}.{idx}@{random.choice(EMAIL_DOMAINS)}\".lower()
+    email = f"{first}.{last}.{idx}@{random.choice(EMAIL_DOMAINS)}".lower()
     return first, last, email
 
 def ensure_customers(conn, target_customers: int, seed: int):

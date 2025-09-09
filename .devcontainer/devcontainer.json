@@ -2,7 +2,7 @@
   "name": "mysql-python-codespace",
   "dockerComposeFile": "../docker-compose.yml",
   "service": "workspace",
-  "workspaceFolder": "/workspaces",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename:-workspace}",
   "forwardPorts": [
     3306
   ],
@@ -17,7 +17,7 @@
     "MYSQL_PORT": "3306",
     "MYSQL_USER": "app_user",
     "MYSQL_PASSWORD": "app_password",
-    "MYSQL_DATABASE": "airports"
+    "MYSQL_DATABASE": "travelops_db"
   },
   "customizations": {
     "vscode": {
